@@ -1,4 +1,5 @@
 
+
 /** This program calculates the Fire Danger Rating Indexes as part of the National Fire Danger
  * Rating system that is widely used by most federal and state forest fire control agencies.
  * The original subroutine was written in FORTRAN and the following is an attempt to re-engineer
@@ -10,26 +11,24 @@
  * @version 1.0
  */
 
-/** Import statements to show what utilities are being used in the class
+// TODO: Auto-generated Javadoc
+/**
+ * The Class fireDangerCalculator.  The following are data returned from calling the constructor.  The values are as 
+ * follows:
+ * 
+ * df - Drying Factor
+ * ffm - Fine Fuel Moisture
+ * adfm - Adjusted (10-day lag) Fuel Moisture
+ * grass - Grass Spread Index
+ * timber - Timber Spread Index
+ * fload - Fire Load Rating (man-hour base)
+ * bui - Build Up Index
  * 
  */
-import java.lang.*;
-import java.math.*;
 
 public class fireDangerCalculator {
 	
-	/**The following are data returned from calling the constructor.  The values are as 
-	 * follows:
-	 * 
-	 * df - Drying Factor
-	 * ffm - Fine Fuel Moisture
-	 * adfm - Adjusted (10-day lag) Fuel Moisture
-	 * grass - Grass Spread Index
-	 * timber - Timber Spread Index
-	 * fload - Fire Load Rating (man-hour base)
-	 * bui - Build Up Index
-	 * 
-	 */
+	
 	
 	double df, // Drying Factor
 	ffm, // Fine Fuel Moisture
@@ -39,14 +38,10 @@ public class fireDangerCalculator {
 	fload, // Fire Load Rating (man-hour base)
 	bui;  	// Build Up Index (today's)
 	
-	/**
-	 * Yesterday's Build Up
-	 */
+	/** Yesterday's Build Up. */
 	double buo;
 	
-	/**
-	 * the precipitation
-	 */
+	/** the precipitation. */
 	double precip;
 	
 	/**
@@ -54,9 +49,17 @@ public class fireDangerCalculator {
 	 * piecewise regression coefficients used to determine ffm.
 	 * 
 	 */
+	
+	/** The values of coefficient A. */
 	double[] coeffA = {-0.185900, -0.85900, -0.059660, -0.077373};
+	
+	/** The values of coefficient B */
 	double[] coeffB = {30.0, 19.2, 13.8, 22.5};
+	
+	/** The values of coefficient C. */
 	double[] coeffC = {4.5, 12.5, 27.5};
+	
+	/** The values of coefficient D. */
 	double[] coeffD = {16.0, 10.0, 7.0, 5.0, 4.0, 3.0};
 	
 	/**
@@ -84,27 +87,29 @@ public class fireDangerCalculator {
 		this.fload = 0.0;
 		this.buo = buo;
 		
-		if (isSnow) { // isSnow is true indicates there is some snow on the ground
+		if (isSnow) { // boolean values isSnow is true indicates there is some snow on the ground
 			grass = 0.0;	// set both grass and timber indexes to be zero
 			timber = 0.0; 
 			adjustBuildUpIndex(precip);  // call adjustBuildUpIndex to account for precipitation
-		} else { // Calculate ffm, df, adjust Fine Fuel for herb stage
-			calcFineFuelMoisture(dryTemp, wetTemp); // adjust ffm based on dry and wet bulb temps
-			calcDryingFactor();
+		} else { // Calculate ffm, df, adjust Fine Fuel for herb stage, adjust bui based on rain precipitation,
+			     // adjust buo with df, calculate the adjusted fuel moisture (adfm), adjust the grass and 
+				 // timber indexes based on wind speed.  Finally, calculate the fire load (Fload).
+			calculateFineFuelMoisture(dryTemp, wetTemp); // adjust ffm based on dry and wet bulb temps
+			calculateDryingFactor();
 			adjustFfmWithHerb(iHerb);
 			adjustBuildUpIndex(precip);
 			adjustBuoWithDryingFactor();
-			calcAdfm();
+			calculateAdfm();
 			adjustGrassTimberIndex(windSpeed);
 			if (timber > 0.0 && bui > 0.0) {
-				calcFload();
+				calculateFload();
 			}
 		}
 				
 	}	
 	
 	/**
-	 * The following method calculates the Build Up Index based on yesterday's build up.
+	 * This method calculates the Build Up Index based on yesterday's build up.
 	 * The Build Up Index is adjusted when precipitation exceeds 0.1 inches.
 	 * 
 	 * Precipitation is the past 24 hours precipitation in inches and hundredths.
@@ -122,7 +127,7 @@ public class fireDangerCalculator {
 	}  
 	
 	/**
-	 * The following method calculates the Fine Fuel Moisture (ffm).  The depression of
+	 * This method calculates the Fine Fuel Moisture (ffm).  The depression of
 	 * the wet bulb (dif = dryTemp - wetTemp) is used to decide which set of piecewise
 	 * regression coefficients (which set of A and B) will be used.
 	 * 
@@ -130,9 +135,9 @@ public class fireDangerCalculator {
 	 * @param wetTemp the wet bulb temperature
 	 */
 	
-	public void calcFineFuelMoisture(double dryTemp, double wetTemp) {
+	public void calculateFineFuelMoisture(double dryTemp, double wetTemp) {
 		
-		double diff = dryTemp - wetTemp;
+		double diff = dryTemp - wetTemp; // Difference between dry and wet bulb temperatures
 		double a = 0.0; // Initialize value of A
 		double b = 0.0; // Initialize value of B
 		
@@ -145,7 +150,7 @@ public class fireDangerCalculator {
 		} else if (diff < 27.5) {  // Comparing the difference between dryTemp and wetTemp with coeffC[3]
 			a = coeffA[2];
 			b = coeffB[2];
-		} else {	// Set a and b to be the last values of coeffA[] and coeffB[] arrays
+		} else {	// Set a and b to values of last elements of coeffA[] and coeffB[] arrays
 			a = coeffA[3];
 			b = coeffB[3];
 		}
@@ -157,7 +162,7 @@ public class fireDangerCalculator {
 	/**
 	 * This method calculates the Drying Factor based on values of coeffD[].
 	 */
-	public void calcDryingFactor() {
+	public void calculateDryingFactor() {
 		
 		for (int i = 1; i<=6; i++) {
 			if (ffm - coeffD[i-1] > 0) {
@@ -171,7 +176,7 @@ public class fireDangerCalculator {
 	
 	/**
 	 * This method adjusts the Fine Fuel Moisture based on the current herb stage.
-	 * The ffm is added 5% for each herb stage greater than one.
+	 * The Fine Fuel Moisture is added 5% for each herb stage greater than one.
 	 * 
 	 * @param iHerb the current herb state 1=cured, 2=transition, 3=green
 	 */
@@ -186,7 +191,8 @@ public class fireDangerCalculator {
 	}
 	
 	/**
-	 * Adding the Drying Factor to today's Build Up after correction for rain is adjusted
+	 * Adding the Drying Factor to today's Build Up after correction for rain is adjusted.
+	 * 
 	 */
 	
 	public void adjustBuoWithDryingFactor() {
@@ -196,17 +202,18 @@ public class fireDangerCalculator {
 	
 	/**
 	 * This method calculates the Adjusted Fuel Moisture based on the current
-	 * Fine Fuel Moisture with today's Build Up Index
+	 * Fine Fuel Moisture with today's Build Up Index.
+	 * 
 	 */
 	
-	public void calcAdfm() {
+	public void calculateAdfm() {
 		
 		adfm = 0.9 * ffm + 0.5 + 9.5 * Math.exp(-1.0 * bui / 50);
 		
 	}
 	
 	/**
-	 * The following method adjusts the Grass and Timber Indexes based on wind speed and the 
+	 * This method adjusts the Grass and Timber Indexes based on wind speed and the 
 	 * Adjusted Fuel Moisture.  There are two conditions that are being checked for.  The first 
 	 * condition is the adfm.  If it is greater than 30%, the Grass and Timber indexes will be set 
 	 * to 1.  The second condition is the wind speed.  If it is greater than 14 Mph, a different 
@@ -252,7 +259,7 @@ public class fireDangerCalculator {
 	 * Indexes are zero.  Ensure that Fload is greater than zero, otherwise set it to zero.
 	 */
 	
-	public void calcFload() {
+	public void calculateFload() {
 		 
 			 if (timber > 0.0 && bui > 0.0) {  
 				 fload = 1.75 * Math.log10(timber) + 0.32 * Math.log10(bui) - 1.640;  
@@ -268,23 +275,32 @@ public class fireDangerCalculator {
 	}
 	
 	/**
-	 * Main method to test all values in calculating the Fire Danger Ratings
-	 * @param args
+	 * Main method to test all values in calculating the Fire Danger Ratings.
+	 *
+	 * @param args the arguments
 	 */
 
 	public static void main(String args[]){
 		
 		// Instantiate a new fireDangerCalculator to test all values from input values
 		
-		fireDangerCalculator fdc = new fireDangerCalculator(20, 15, false, 1.0, 10, 2, 1);  
+		fireDangerCalculator fdc = new fireDangerCalculator(32, 12, false, 0.5, 20, 2, 1);  
 		
+		/**
+		 * The following values are calculated from the given input values for dryTemp, wetTemp,
+		 * isSnow, precip, windSpeed, buo (yesterday's build up), and iHerb (current herb stage)
+		 */
+		
+		System.out.println("The following are values calculated from the fireDangerCalculator:\n");
+		System.out.println("------------------------------------------------------------------\n");		
 		System.out.println("The Drying Factor is: " + fdc.df);  
 		System.out.println("The Fine Fuel Moisture is: " + fdc.ffm);  
-		System.out.println("The Adjusted (10 day lag) Fuel Moisture is: " + fdc.adfm);  
+		System.out.println("The Adjusted (10-day lag) Fuel Moisture is: " + fdc.adfm);  
 		System.out.println("The Grass Spread Index is: " + fdc.grass);  
 		System.out.println("The Timber Spread Index is: " + fdc.timber);  
 		System.out.println("The Fire Load Rating (man-hour base) is: " + fdc.fload);  
 		System.out.println("The Build Up Index is: " + fdc.bui);
+		System.out.println("------------------------------------------------------------------\n");		
 		
 	}
 		 	  		
