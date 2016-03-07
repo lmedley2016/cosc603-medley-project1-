@@ -137,26 +137,41 @@ public class fireDangerCalculator {
 	
 	public void calculateFineFuelMoisture(double dryTemp, double wetTemp) {
 		
+		double a = a(dryTemp, wetTemp);
+		double b = b(dryTemp, wetTemp);
 		double diff = dryTemp - wetTemp; // Difference between dry and wet bulb temperatures
-		double a = 0.0; // Initialize value of A
-		double b = 0.0; // Initialize value of B
-		
-		if (diff < 4.5) {  // Comparing the difference between dryTemp and wetTemp with coeffC[1]
-			a = coeffA[0];
-			b = coeffB[0];
-		} else if (diff < 12.5) {  // Comparing the difference between dryTemp and wetTemp with coeffC[2]
-			a = coeffA[1];
-			b = coeffB[1];
-		} else if (diff < 27.5) {  // Comparing the difference between dryTemp and wetTemp with coeffC[3]
-			a = coeffA[2];
-			b = coeffB[2];
-		} else {	// Set a and b to values of last elements of coeffA[] and coeffB[] arrays
-			a = coeffA[3];
-			b = coeffB[3];
-		}
-		
 		ffm = b * Math.exp(a) * diff; 		
 		
+	}
+
+	private double b(double dryTemp, double wetTemp) {
+		double diff = dryTemp - wetTemp;
+		double b = 0.0;
+		if (diff < 4.5) {
+			b = coeffB[0];
+		} else if (diff < 12.5) {
+			b = coeffB[1];
+		} else if (diff < 27.5) {
+			b = coeffB[2];
+		} else {
+			b = coeffB[3];
+		}
+		return b;
+	}
+
+	private double a(double dryTemp, double wetTemp) {
+		double diff = dryTemp - wetTemp;
+		double a = 0.0;
+		if (diff < 4.5) {
+			a = coeffA[0];
+		} else if (diff < 12.5) {
+			a = coeffA[1];
+		} else if (diff < 27.5) {
+			a = coeffA[2];
+		} else {
+			a = coeffA[3];
+		}
+		return a;
 	}	
 	
 	/**
